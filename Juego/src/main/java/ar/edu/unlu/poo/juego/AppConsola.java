@@ -5,7 +5,7 @@ import ar.edu.unlu.poo.juego.modelo.Partida;
 import ar.edu.unlu.poo.juego.vista.VistaConsola;
 
 public class AppConsola {
-    public static void main(String[] args) {
+    static void main(String[] args) {
         ControladorConsola c = new ControladorConsola(new Partida(), new VistaConsola());
         c.menu();
     }

@@ -7,13 +7,17 @@ public class VistaConsola {
 
 
     public int obtenerOpcion(){
-        try {
-
-        }
         return sc.nextInt();
     }
 
     public void mostrarMensaje(String mensaje) {
         System.out.println(mensaje);
+    }
+
+    public void mostrarMenu() {
+        System.out.println("\n-MENU");
+        System.out.println("[1]JUGAR");
+        System.out.println("[2]SALIR");
+        System.out.print("Opcion: ");
     }
 }
