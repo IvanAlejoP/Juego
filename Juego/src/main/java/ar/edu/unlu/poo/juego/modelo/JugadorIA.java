@@ -6,7 +6,4 @@ public class JugadorIA extends Jugador{
         super(nombre);
     }
 
-
-
-
 }

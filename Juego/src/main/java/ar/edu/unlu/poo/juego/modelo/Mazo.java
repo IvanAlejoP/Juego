@@ -11,6 +11,9 @@ public class Mazo {
         llenarMazo();
     }
 
+    //GETTERS
+    //SETTERS
+
     private void llenarMazo(){
         for(Palo p : Palo.values()){
             for(Valor v : Valor.values()){

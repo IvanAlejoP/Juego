@@ -1,31 +1,48 @@
 package ar.edu.unlu.poo.juego.modelo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Mano {
-    ArrayList<Carta> mano;
+    private ArrayList<Carta> cartas;
 
     public Mano(){
-        this.mano = new ArrayList<>();
+        this.cartas = new ArrayList<>();
     }
 
-    public void agregarCarta(Carta carta){
-        this.mano.add(carta);
+    //GETTERS
+    public int getTamanio() {
+        return this.cartas.size();
     }
 
     public Carta getCarta(int indice){
-        if(this.mano.get(indice) != null){
-            return this.mano.get(indice);
+        if(this.cartas.get(indice) != null){
+            return this.cartas.get(indice);
         }
         return null;
     }
 
-    public Carta descartarCarta(int indice) {
-        return this.mano.remove(indice);
+    public ArrayList<Carta> getCartas(){
+        return this.cartas;
+    }
+    //SETTERS
+
+
+    //METODOS MIXTOS
+    public void mezclarCartas(){
+        Collections.shuffle(cartas);
     }
 
+    public void agregarCarta(Carta carta){
+        this.cartas.add(carta);
+    }
 
-    public int getTamanio() {
-        return this.mano.size();
+    public Carta descartarCarta(int indice) {
+        return this.cartas.remove(indice);
+    }
+
+    public void descartarPares(Carta c, Carta k){
+        this.cartas.remove(c);
+        this.cartas.remove(k);
     }
 }
