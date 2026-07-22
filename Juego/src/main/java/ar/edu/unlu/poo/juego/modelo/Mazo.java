@@ -16,9 +16,11 @@ public class Mazo {
 
     private void llenarMazo(){
         for(Palo p : Palo.values()){
-            for(Valor v : Valor.values()){
-                if(v != Valor.JOKER){
-                    this.mazo.add(new Carta(p, v));
+            if(p != Palo.JOKER){
+                for(Valor v : Valor.values()){
+                    if(v != Valor.JOKER){
+                        this.mazo.add(new Carta(p, v));
+                    }
                 }
             }
         }
