@@ -35,11 +35,10 @@ public class ControladorConsola implements Observador {
     }
 
     public void jugando(){
-        partida.repartirCartas();
-        partida.setPrimerJugadorEnTurno();
+        partida.iniciar();
         actualizar();
         //ACTUALIZAR
-        while(partida.juegoTerminado()){ //WHILE QUEDEN JUGADORES JUGANDO (J>1)
+        while(!partida.juegoTerminado()){ //WHILE QUEDEN JUGADORES JUGANDO (J>1)
 
             if(partida.getJugadorEnTurno() instanceof JugadorHumano)
             {
@@ -49,10 +48,18 @@ public class ControladorConsola implements Observador {
             else if(partida.getJugadorEnTurno() instanceof JugadorIA)
             {
                 vista.mostrarMensaje("\nTURNO IA: ");
+                vista.mostrarMensaje("IA TOMA CARTA... ");
+                vista.mostrarMensaje("IA DESCARTA PARES...");
+                /*((JugadorIA) partida.getJugadorEnTurno()).tomarCartaIA(partida.getSiguienteJugador(partida.getJugadorEnTurno()));
+                ((JugadorIA) partida.getJugadorEnTurno()).mezclarYDescartarIA();*/
                 partida.jugarIA(partida.getJugadorEnTurno());
             }
 
-            partida.verificarJugadores();
+            actualizar();
+            partida.revisarJugadores();
+            if(partida.juegoTerminado()){
+                break;
+            }
             partida.pasarTurno();
         }
     }
@@ -64,7 +71,6 @@ public class ControladorConsola implements Observador {
                 case 1: //TOMAR CARTA Y DESCARTAR
                     turnoTomarCarta(jugador);
                     turnoDescartarCartas(jugador);
-                    actualizar();
                     return;
                 case 2:
                     jugador.mezclarMano();
@@ -79,12 +85,12 @@ public class ControladorConsola implements Observador {
 
     public void turnoTomarCarta(Jugador jugador){
         vista.mostrarMensajeSinSalto("\nElija una carta del contrincante: ");
-        int indice = vista.obtenerOpcion() - 1;
+        int indice = vista.obtenerOpcion()-1;
 
-        while(partida.opcionValidaParaTomar(jugador, indice)){
+        while(!partida.opcionValidaParaTomar(jugador, indice)){
             vista.mostrarMensaje("\nOpcion invalida!");
             vista.mostrarMensajeSinSalto("\nElija una carta del contrincante: ");
-            indice = vista.obtenerOpcion();
+            indice = vista.obtenerOpcion()-1;
         }
 
         vista.mostrarMensaje("\nTomando carta...");
@@ -97,27 +103,28 @@ public class ControladorConsola implements Observador {
         if(jugador.tienePares()){
             vista.mostrarMensaje("\nElija dos cartas del mismo par: ");
             vista.mostrarMensajeSinSalto("Carta UNO: ");
-            int cartaUno = vista.obtenerOpcion();
+            int cartaUno = vista.obtenerOpcion() - 1;
             vista.mostrarMensajeSinSalto("Carta DOS: ");
-            int cartaDos = vista.obtenerOpcion();
+            int cartaDos = vista.obtenerOpcion() - 1;
 
             while(
                 cartaUno == cartaDos ||
-                !partida.cartaValida(jugador, cartaUno) ||
-                !partida.cartaValida(jugador, cartaDos) ||
+                !partida.esCartaValida(jugador, cartaUno) ||
+                !partida.esCartaValida(jugador, cartaDos) ||
                 !partida.sonPares(jugador, cartaUno, cartaDos))
             {
                 vista.mostrarMensaje("\nOpcion invalida!");
-                vista.mostrarMensajeSinSalto("Carta UNO: ");
-                cartaUno = vista.obtenerOpcion();
+                vista.mostrarMensajeSinSalto("\nCarta UNO: ");
+                cartaUno = vista.obtenerOpcion() - 1;
                 vista.mostrarMensajeSinSalto("Carta DOS: ");
-                cartaDos = vista.obtenerOpcion();
+                cartaDos = vista.obtenerOpcion() - 1;
             }
             vista.mostrarMensaje("\nEliminando pares...");
             partida.descartarPares(jugador, jugador.getCarta(cartaUno), jugador.getCarta(cartaDos));
         }
         else{
             vista.mostrarMensaje("\nNo tienes pares para descartar...");
+            //HABRIA QUE PONER ALGO PARA QUE EL MENSAJE NO SE SALTEE
         }
     }
 
@@ -143,6 +150,7 @@ public class ControladorConsola implements Observador {
 
     @Override
     public void actualizar() {
+        //MAL EL GETJUGADORES, HAY QUE UTILIZAR EL NOTIFICAR OBSERVADORES EN PARTIDA
         vista.mostrarJugadores(partida.getJugadores());
     }
 }

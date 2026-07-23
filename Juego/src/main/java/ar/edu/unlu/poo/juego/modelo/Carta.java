@@ -15,6 +15,14 @@ public class Carta {
         return this.valor;
     }
 
+    public Palo getPalo(){
+        return this.palo;
+    }
+
+
+
+
+
     @Override
     public boolean equals(Object obj) {
 

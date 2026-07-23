@@ -26,7 +26,7 @@ public abstract class Jugador {
 
     public Mano getMano(){
         return this.mano;
-    }
+    }//MAL
 
     public Carta getCarta(int indice){
         return this.mano.getCarta(indice);
@@ -43,11 +43,11 @@ public abstract class Jugador {
 
     //METODOS MIXTOS
     public boolean existeCarta(int indice){
-        return this.mano.getCartas().get(indice) != null;
+        return this.mano.existeCarta(indice);
     }
 
-    public void descartarPares(Carta c, Carta k){
-        this.mano.descartarPares(c, k);
+    public void descartarPares(Carta cartaUno, Carta cartaDos){
+        this.mano.descartarPares(cartaUno, cartaDos);
     }
 
     public Carta cartaRobada(int indice) {
@@ -66,23 +66,16 @@ public abstract class Jugador {
     }
 
     public boolean jugadorTermino(){
-        return getTamanioMano() == 0;
+        return getEstado() == EstadoJugador.TERMINO;
     }
 
     public boolean tienePares(){
-        for(Carta c : mano.getCartas()){
-            for(Carta k : mano.getCartas()){
-                if(!c.equals(k)){
-                    if(c.getValor() == k.getValor()){
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        return mano.tienePares();
     }
 
-
-
-
+    public void revisarse() {//HAY QUE RENOMBRAR ESTO
+        if(mano.isVacio()) {
+            setEstado(EstadoJugador.TERMINO);
+        }
+    }
 }

@@ -32,13 +32,19 @@ public class Partida implements Observable {
         for(int i=0; i<jugadores.size(); i++){
             if(jugadores.get(i) == jugador){
                 siguiente = (i + 1) % jugadores.size();
+
+                if(jugadores.get(i).getEstado() == EstadoJugador.TERMINO && !juegoTerminado()){
+                    return getSiguienteJugador(jugadores.get(siguiente));
+                }
+
                 break;
             }
         }
+
         return jugadores.get(siguiente);
     }
 
-    public ArrayList<Jugador> getJugadores(){
+    public ArrayList<Jugador> getJugadores(){//MAL
         return this.jugadores;
     }
 
@@ -56,16 +62,21 @@ public class Partida implements Observable {
 
 
     //METODOS MIXTOS
+    public void iniciar(){
+        repartirCartas();
+        setPrimerJugadorEnTurno();
+    }
+
     public void descartarPares(Jugador jugador, Carta uno, Carta dos){
         jugador.descartarPares(uno, dos);
     }
 
     public boolean sonPares(Jugador jugador, int cartaUno, int cartaDos){
-        return jugador.existeCarta(cartaUno) && jugador.existeCarta(cartaDos);
+        return jugador.getCarta(cartaUno).getValor() == jugador.getCarta(cartaDos).getValor();
     }
 
-    public boolean cartaValida(Jugador jugador, int carta){
-        return carta > 0 && carta <= jugador.getTamanioMano();
+    public boolean esCartaValida(Jugador jugador, int indice){
+        return jugador.existeCarta(indice);
     }
 
     public void agregarJugador(Jugador j){
@@ -77,23 +88,8 @@ public class Partida implements Observable {
     }
 
     public void pasarTurno(){
-        Jugador j = getJugadorEnTurno();
-        if(j.jugadorTermino()){
-            j.setEstado(EstadoJugador.TERMINO);
-        }
-        else{
-            j.setEstado(EstadoJugador.ESPERANDO);
-        }
-
-        if(juegoTerminado()) return;
-
-        Jugador i = getSiguienteJugador(j);
-        while(!i.jugadorTermino()){
-            i = getSiguienteJugador(i);
-        }
-
-        i.setEstado(EstadoJugador.JUGANDO);
-
+        getJugadorEnTurno().setEstado(EstadoJugador.ESPERANDO);
+        getSiguienteJugador(getJugadorEnTurno()).setEstado(EstadoJugador.JUGANDO);
         //VERIFICAR JUGADORES QUE TERMINARON
     }
 
@@ -111,17 +107,17 @@ public class Partida implements Observable {
     }
 
     public boolean opcionValidaParaTomar(Jugador jugador, int indice) {
-        return getSiguienteJugador(jugador).getTamanioMano() <= indice || indice < 0;
+        return getSiguienteJugador(jugador).existeCarta(indice);
     }
 
     public void jugarIA(Jugador jugador){
         //TOMA CARTA
-        int rand = (int)(Math.random() * getSiguienteJugador(jugador).getTamanioMano() + 1);
+        int rand = (int)(Math.random() * getSiguienteJugador(jugador).getTamanioMano());
         tomarCarta(jugador, rand);
 
         //DESCARTA Y MEZCLA
-        for(Carta c : jugador.getMano().getCartas()){
-            for(Carta k : jugador.getMano().getCartas()){
+        for(Carta c : jugador.getMano().getMano()){
+            for(Carta k : jugador.getMano().getMano()){
                 if(!c.equals(k)){
                     if(c.getValor() == k.getValor()){
                         jugador.descartarPares(c, k);
@@ -133,11 +129,9 @@ public class Partida implements Observable {
         }
     }
 
-    public void verificarJugadores(){
+    public void revisarJugadores(){
         for(Jugador j : jugadores){
-            if(j.getTamanioMano() == 0){
-                j.setEstado(EstadoJugador.TERMINO);
-            }
+            j.revisarse();
         }
     }
 
@@ -148,7 +142,7 @@ public class Partida implements Observable {
                 contador++;
             }
         }
-        return contador <= (getCantidadJugadores() - 1);
+        return contador == (getCantidadJugadores() - 1);
     }
 
 

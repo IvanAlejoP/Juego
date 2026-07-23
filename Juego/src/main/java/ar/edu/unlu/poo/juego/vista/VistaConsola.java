@@ -43,23 +43,35 @@ public class VistaConsola {
         System.out.println();
         for(Jugador j : jugadores){
             if(j instanceof JugadorHumano){
-                System.out.printf("[%s][%d]: ", j.getNombre(),j.getTamanioMano());
-                for(Carta c : j.getMano().getCartas()){
-                    if(c.getValor() == Valor.JOKER){
-                        System.out.print("[J]");
-                    }
-                    else{
-                        System.out.printf("[%d]", c.getValor().getNumero());
-                    }
+                if(j.jugadorTermino()){
+                    System.out.printf("[%s]TERMINO: ", j.getNombre());
                 }
-                System.out.println();
+                else{
+                    System.out.printf("[%s][%d]: ", j.getNombre(),j.getTamanioMano());
+                    for(Carta c : j.getMano().getMano()){
+                        if(c.getValor() == Valor.JOKER){
+                            System.out.print("[J]");
+                        }
+                        else{
+                            System.out.printf("[%d]", c.getValor().getNumero());
+                        }
+                    }
+                    System.out.println();
+                }
+
             }
             else if(j instanceof JugadorIA){
-                System.out.printf("[%s][%d]: ", j.getNombre(),j.getTamanioMano());
-                for(Carta c : j.getMano().getCartas()){
-                    System.out.print("[X]");
+                if(j.jugadorTermino()){
+                    System.out.printf("[%s]TERMINO: ", j.getNombre());
                 }
-                System.out.println();
+                else{
+                    System.out.printf("[%s][%d]: ", j.getNombre(),j.getTamanioMano());
+                    for(Carta c : j.getMano().getMano()){
+                        System.out.print("[X]");
+                    }
+                    System.out.println();
+                }
+
             }
         }
     }
