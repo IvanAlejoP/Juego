@@ -51,7 +51,7 @@ public abstract class Jugador {
     }
 
     public Carta cartaRobada(int indice) {
-        if(indice >= 0 && indice <= mano.getTamanio()){
+        if(indice >= 0 && indice < mano.getTamanio()){
             return mano.descartarCarta(indice);
         }
         return null;

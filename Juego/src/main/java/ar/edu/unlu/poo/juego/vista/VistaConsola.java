@@ -44,7 +44,7 @@ public class VistaConsola {
         for(Jugador j : jugadores){
             if(j instanceof JugadorHumano){
                 if(j.jugadorTermino()){
-                    System.out.printf("[%s]TERMINO: ", j.getNombre());
+                    System.out.printf("[%s]TERMINO...", j.getNombre());
                 }
                 else{
                     System.out.printf("[%s][%d]: ", j.getNombre(),j.getTamanioMano());
@@ -56,23 +56,25 @@ public class VistaConsola {
                             System.out.printf("[%d]", c.getValor().getNumero());
                         }
                     }
-                    System.out.println();
                 }
-
+                System.out.println();
             }
             else if(j instanceof JugadorIA){
                 if(j.jugadorTermino()){
-                    System.out.printf("[%s]TERMINO: ", j.getNombre());
+                    System.out.printf("[%s]TERMINO...", j.getNombre());
                 }
                 else{
                     System.out.printf("[%s][%d]: ", j.getNombre(),j.getTamanioMano());
                     for(Carta c : j.getMano().getMano()){
                         System.out.print("[X]");
                     }
-                    System.out.println();
                 }
-
+                System.out.println();
             }
         }
+    }
+
+    public void mostrarPerdedor(Jugador jugadorEnTurno) {
+        System.out.printf("\n[%s]PERDIO...\n", jugadorEnTurno.getNombre());
     }
 }

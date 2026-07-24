@@ -23,6 +23,8 @@ public class ControladorConsola implements Observador {
                     cantJugadores();
                     vista.mostrarMensaje("\nJugando!!!");
                     jugando();
+                    vista.mostrarPerdedor(partida.getJugadorEnTurno());
+                    vista.mostrarMensaje("\nHasta Luego!");
                     return;
                 case 2:
                     vista.mostrarMensaje("\nHasta Luego!");
@@ -36,7 +38,7 @@ public class ControladorConsola implements Observador {
 
     public void jugando(){
         partida.iniciar();
-        actualizar();
+        //actualizar();
         //ACTUALIZAR
         while(!partida.juegoTerminado()){ //WHILE QUEDEN JUGADORES JUGANDO (J>1)
 
@@ -55,12 +57,12 @@ public class ControladorConsola implements Observador {
                 partida.jugarIA(partida.getJugadorEnTurno());
             }
 
-            actualizar();
-            partida.revisarJugadores();
             if(partida.juegoTerminado()){
                 break;
             }
             partida.pasarTurno();
+            partida.revisarJugadores();
+            //actualizar();
         }
     }
 
@@ -73,8 +75,8 @@ public class ControladorConsola implements Observador {
                     turnoDescartarCartas(jugador);
                     return;
                 case 2:
-                    jugador.mezclarMano();
-                    actualizar();
+                    partida.mezclarMano(jugador);
+                    //actualizar();
                     break;
                 default:
                     vista.mostrarMensaje("\nOpcion invalida!");
@@ -96,7 +98,7 @@ public class ControladorConsola implements Observador {
         vista.mostrarMensaje("\nTomando carta...");
         partida.tomarCarta(jugador, indice);
 
-        actualizar();
+        //actualizar();
     }
 
     public void turnoDescartarCartas(Jugador jugador){

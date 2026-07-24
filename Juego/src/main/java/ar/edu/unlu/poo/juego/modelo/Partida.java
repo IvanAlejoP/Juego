@@ -33,7 +33,7 @@ public class Partida implements Observable {
             if(jugadores.get(i) == jugador){
                 siguiente = (i + 1) % jugadores.size();
 
-                if(jugadores.get(i).getEstado() == EstadoJugador.TERMINO && !juegoTerminado()){
+                if(jugadores.get(siguiente).getEstado() == EstadoJugador.TERMINO && !juegoTerminado()){
                     return getSiguienteJugador(jugadores.get(siguiente));
                 }
 
@@ -65,6 +65,8 @@ public class Partida implements Observable {
     public void iniciar(){
         repartirCartas();
         setPrimerJugadorEnTurno();
+
+        notificarObservadores();
     }
 
     public void descartarPares(Jugador jugador, Carta uno, Carta dos){
@@ -85,12 +87,16 @@ public class Partida implements Observable {
 
     public void tomarCarta(Jugador jugador, int carta){
         jugador.tomarCarta(getSiguienteJugador(jugador).cartaRobada(carta));
+
+        notificarObservadores();
     }
 
     public void pasarTurno(){
-        getJugadorEnTurno().setEstado(EstadoJugador.ESPERANDO);
-        getSiguienteJugador(getJugadorEnTurno()).setEstado(EstadoJugador.JUGANDO);
-        //VERIFICAR JUGADORES QUE TERMINARON
+        Jugador actual = getJugadorEnTurno();
+        Jugador siguiente = getSiguienteJugador(actual);
+
+        actual.setEstado(EstadoJugador.ESPERANDO);
+        siguiente.setEstado(EstadoJugador.JUGANDO);
     }
 
     public void repartirCartas(){
@@ -133,6 +139,8 @@ public class Partida implements Observable {
         for(Jugador j : jugadores){
             j.revisarse();
         }
+
+        notificarObservadores();
     }
 
     public boolean juegoTerminado(){
@@ -143,6 +151,12 @@ public class Partida implements Observable {
             }
         }
         return contador == (getCantidadJugadores() - 1);
+    }
+
+    public void mezclarMano(Jugador jugador){
+        jugador.mezclarMano();
+
+        notificarObservadores();
     }
 
 
