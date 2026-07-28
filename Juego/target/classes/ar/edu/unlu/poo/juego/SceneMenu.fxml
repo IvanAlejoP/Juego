@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.edu.unlu.poo.juego.controlador.MenuController">
+   <children>
+      <Button layoutX="274.0" layoutY="150.0" mnemonicParsing="false" onAction="#cambiarJugando" text="JUGAR" />
+      <Button layoutX="277.0" layoutY="300.0" mnemonicParsing="false" text="SALIR" />
+      <Text layoutX="85.0" layoutY="79.0" text="ZOMBIE" textAlignment="CENTER" wrappingWidth="429.6953125">
+         <font>
+            <Font size="60.0" />
+         </font>
+      </Text>
+      <Button layoutX="257.0" layoutY="225.0" mnemonicParsing="false" text="Instrucciones" />
+   </children>
+</AnchorPane>
