@@ -61,6 +61,9 @@ public class ControladorConsola implements Observador {
                 break;
             }
             partida.pasarTurno();
+
+            vista.mostrarMensaje("\nPasando Turno...");
+
             partida.revisarJugadores();
             //actualizar();
         }
@@ -152,7 +155,6 @@ public class ControladorConsola implements Observador {
 
     @Override
     public void actualizar() {
-        //MAL EL GETJUGADORES, HAY QUE UTILIZAR EL NOTIFICAR OBSERVADORES EN PARTIDA
         vista.mostrarJugadores(partida.getJugadores());
     }
 }

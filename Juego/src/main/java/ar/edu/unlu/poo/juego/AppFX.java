@@ -1,5 +1,8 @@
 package ar.edu.unlu.poo.juego;
 
+import ar.edu.unlu.poo.juego.controlador.ControladorFX;
+import ar.edu.unlu.poo.juego.modelo.Partida;
+import ar.edu.unlu.poo.juego.vista.VistaFX;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
@@ -13,16 +16,12 @@ public class AppFX extends Application{
     @Override
     public void start(Stage stage) throws IOException {
 
-        Parent root = FXMLLoader.load(getClass().getResource("SceneMenu.fxml"));
-        Scene sceneMenu = new Scene(root);
-        stage.setScene(sceneMenu);
-        stage.show();
+        Partida partida = new Partida();
+        VistaFX vista = new VistaFX(stage);
+        ControladorFX controlador = new ControladorFX(partida, vista);
 
-        /*FXMLLoader fxmlLoader = new FXMLLoader(AppFX.class.getResource("SceneMenu.fxml"));
-        Scene scene = new Scene(fxmlLoader.load());
-        stage.setTitle("Hello!");
-        stage.setScene(scene);
-        stage.show();*/
+        vista.setControlador(controlador);
+        vista.cambiarSceneMenu();
     }
 
     public static void main(String[] args) {

@@ -1,8 +1,124 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.edu.unlu.poo.juego.controlador.MenuController">
+<?import javafx.scene.layout.FlowPane?>
+<AnchorPane xmlns="http://javafx.com/javafx/26"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ar.edu.unlu.poo.juego.gui.JugandoController">
+
+   <children>
+
+      <GridPane AnchorPane.topAnchor="0.0"
+                AnchorPane.bottomAnchor="0.0"
+                AnchorPane.leftAnchor="0.0"
+                AnchorPane.rightAnchor="0.0">
+
+         <columnConstraints>
+            <ColumnConstraints percentWidth="25"/>
+            <ColumnConstraints percentWidth="50"/>
+            <ColumnConstraints percentWidth="25"/>
+         </columnConstraints>
+
+         <rowConstraints>
+            <RowConstraints percentHeight="25"/>
+            <RowConstraints percentHeight="50"/>
+            <RowConstraints percentHeight="25"/>
+         </rowConstraints>
+
+         <!-- Jugador arriba -->
+
+         <ScrollPane fitToHeight="true"
+                     fitToWidth="true"
+                     hbarPolicy="AS_NEEDED"
+                     vbarPolicy="NEVER"
+                     GridPane.columnIndex="1">
+
+            <content>
+               <FlowPane fx:id="boxArriba"
+                         hgap="5"
+                         vgap="5"/>
+            </content>
+
+         </ScrollPane>
+
+         <!-- Jugador izquierda -->
+
+         <ScrollPane fitToHeight="true"
+                     fitToWidth="true"
+                     hbarPolicy="NEVER"
+                     vbarPolicy="AS_NEEDED"
+                     GridPane.rowIndex="1">
+
+            <content>
+               <FlowPane fx:id="boxIzquierda"
+                         orientation="VERTICAL"
+                         hgap="5"
+                         vgap="5"/>
+            </content>
+
+         </ScrollPane>
+
+         <!-- Centro -->
+
+         <Label fx:id="Turno"
+                alignment="CENTER"
+                text="Turno:"
+                GridPane.columnIndex="1"
+                GridPane.rowIndex="1">
+
+            <font>
+               <Font size="20"/>
+            </font>
+
+         </Label>
+
+         <!-- Jugador derecha -->
+
+         <ScrollPane fitToHeight="true"
+                     fitToWidth="true"
+                     hbarPolicy="NEVER"
+                     vbarPolicy="AS_NEEDED"
+                     GridPane.columnIndex="2"
+                     GridPane.rowIndex="1">
+
+            <content>
+               <FlowPane fx:id="boxDerecha"
+                         orientation="VERTICAL"
+                         hgap="5"
+                         vgap="5"/>
+            </content>
+
+         </ScrollPane>
+
+         <!-- Jugador abajo -->
+
+         <ScrollPane fitToHeight="true"
+                     fitToWidth="true"
+                     hbarPolicy="AS_NEEDED"
+                     vbarPolicy="NEVER"
+                     GridPane.columnIndex="1"
+                     GridPane.rowIndex="2">
+
+            <content>
+               <FlowPane fx:id="boxAbajo"
+                         hgap="5"
+                         vgap="5"/>
+            </content>
+
+         </ScrollPane>
+
+      </GridPane>
+
+   </children>
 
 </AnchorPane>

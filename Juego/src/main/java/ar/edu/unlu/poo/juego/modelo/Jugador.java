@@ -26,7 +26,7 @@ public abstract class Jugador {
 
     public Mano getMano(){
         return this.mano;
-    }//MAL
+    }
 
     public Carta getCarta(int indice){
         return this.mano.getCarta(indice);

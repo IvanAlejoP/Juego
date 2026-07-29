@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.edu.unlu.poo.juego.controlador.MenuController">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.edu.unlu.poo.juego.gui.PrepJuegoController">
    <children>
       <Label alignment="CENTER" layoutX="36.0" layoutY="14.0" prefHeight="106.0" prefWidth="529.0" text="Seleccione la cantidad de Jugadores" textAlignment="CENTER">
          <font>
             <Font size="30.0" />
          </font>
       </Label>
-      <PasswordField layoutX="226.0" layoutY="188.0" promptText="Cant. jugadores" />
-      <Button layoutX="14.0" layoutY="361.0" mnemonicParsing="false" text="SALIR" />
+      <Button layoutX="14.0" layoutY="361.0" mnemonicParsing="false" onAction="#salir" text="SALIR" />
+      <ChoiceBox fx:id="cantJugadores" layoutX="197.0" layoutY="188.0" prefWidth="150.0" />
+      <Button layoutX="348.0" layoutY="188.0" mnemonicParsing="false" onAction="#aceptar" text="Aceptar" />
    </children>
 </AnchorPane>

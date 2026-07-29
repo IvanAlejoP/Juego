@@ -12,4 +12,5 @@ module ar.edu.unlu.poo.juego {
     opens ar.edu.unlu.poo.juego to javafx.fxml;
     opens ar.edu.unlu.poo.juego.controlador to javafx.fxml;
     exports ar.edu.unlu.poo.juego;
+    opens ar.edu.unlu.poo.juego.gui to javafx.fxml;
 }
