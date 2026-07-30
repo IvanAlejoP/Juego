@@ -5,16 +5,25 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.edu.unlu.poo.juego.gui.PrepJuegoController">
+<AnchorPane xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.edu.unlu.poo.juego.gui.PrepJuegoController">
    <children>
-      <Label alignment="CENTER" layoutX="36.0" layoutY="14.0" prefHeight="106.0" prefWidth="529.0" text="Seleccione la cantidad de Jugadores" textAlignment="CENTER">
-         <font>
-            <Font size="30.0" />
-         </font>
-      </Label>
-      <Button layoutX="14.0" layoutY="361.0" mnemonicParsing="false" onAction="#salir" text="SALIR" />
-      <ChoiceBox fx:id="cantJugadores" layoutX="197.0" layoutY="188.0" prefWidth="150.0" />
-      <Button layoutX="348.0" layoutY="188.0" mnemonicParsing="false" onAction="#aceptar" text="Aceptar" />
+      <VBox alignment="CENTER" spacing="25.0"
+            AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+            AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+         <children>
+            <Label alignment="CENTER" text="Seleccione la cantidad de Jugadores" textAlignment="CENTER">
+               <font>
+                  <Font size="30.0" />
+               </font>
+            </Label>
+            <ChoiceBox fx:id="cantJugadores" prefWidth="150.0" />
+            <Button mnemonicParsing="false" onAction="#aceptar" prefWidth="150.0" text="Aceptar" />
+         </children>
+      </VBox>
+
+      <Button mnemonicParsing="false" onAction="#salir" text="SALIR"
+              AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" />
    </children>
 </AnchorPane>

@@ -21,6 +21,10 @@ public class AppFX extends Application{
         ControladorFX controlador = new ControladorFX(partida, vista);
 
         vista.setControlador(controlador);
+
+        stage.setFullScreen(true);
+        stage.setFullScreenExitHint("Presioná ESC para salir de pantalla completa");
+
         vista.cambiarSceneMenu();
     }
 

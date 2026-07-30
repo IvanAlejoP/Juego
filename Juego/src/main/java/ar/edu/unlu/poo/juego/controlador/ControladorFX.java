@@ -1,13 +1,11 @@
 package ar.edu.unlu.poo.juego.controlador;
 
-import ar.edu.unlu.poo.juego.modelo.Jugador;
-import ar.edu.unlu.poo.juego.modelo.JugadorHumano;
-import ar.edu.unlu.poo.juego.modelo.JugadorIA;
-import ar.edu.unlu.poo.juego.modelo.Partida;
+import ar.edu.unlu.poo.juego.modelo.*;
 import ar.edu.unlu.poo.juego.observer.Observador;
 import ar.edu.unlu.poo.juego.vista.VistaFX;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class ControladorFX implements Observador {
     private Partida partida;
@@ -41,8 +39,56 @@ public class ControladorFX implements Observador {
         vista.cambiarSceneJugando(partida.getJugadores());
     }
 
+    public void cambiarSceneFin() throws IOException {
+        Jugador perdedor = partida.getJugadorEnTurno();
+        String nombre = (perdedor != null) ? perdedor.getNombre() : "";
+        vista.cambiarSceneFin(nombre);
+    }
+
     public void salir(){
         vista.salir();
+    }
+
+    //METODOS DE PARTIDA EXPUESTOS PARA LA LOGICA DE LA GUI DE JUEGO (JugandoController)
+
+    public Jugador getJugadorEnTurno(){
+        return partida.getJugadorEnTurno();
+    }
+
+    public Jugador getSiguienteJugador(Jugador jugador){
+        return partida.getSiguienteJugador(jugador);
+    }
+
+    public ArrayList<Jugador> getJugadores(){
+        return partida.getJugadores();
+    }
+
+    public void tomarCarta(Jugador jugador, int indice){
+        partida.tomarCarta(jugador, indice);
+    }
+
+    public boolean sonPares(Jugador jugador, int cartaUno, int cartaDos){
+        return partida.sonPares(jugador, cartaUno, cartaDos);
+    }
+
+    public void descartarPares(Jugador jugador, Carta uno, Carta dos){
+        partida.descartarPares(jugador, uno, dos);
+    }
+
+    public void pasarTurno(){
+        partida.pasarTurno();
+    }
+
+    public void revisarJugadores(){
+        partida.revisarJugadores();
+    }
+
+    public boolean juegoTerminado(){
+        return partida.juegoTerminado();
+    }
+
+    public void jugarIA(Jugador jugador){
+        partida.jugarIA(jugador);
     }
 
     @Override

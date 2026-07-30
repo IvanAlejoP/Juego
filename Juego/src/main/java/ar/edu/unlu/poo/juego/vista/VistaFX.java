@@ -17,6 +17,7 @@ import java.util.ArrayList;
 public class VistaFX {
     private final Stage stage;
     private ControladorFX controlador;
+    private Scene scene;
 
     public VistaFX(Stage stage){
         this.stage = stage;
@@ -26,13 +27,23 @@ public class VistaFX {
         this.controlador = controlador;
     }
 
+    public void mostrarRoot(Parent root){
+        if(scene == null){
+            scene = new Scene(root);
+            stage.setScene(scene);
+        }
+        else{
+            scene.setRoot(root);
+        }
+    }
+
     public void cambiarSceneMenu() throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/edu/unlu/poo/juego/SceneMenu.fxml"));
         Parent root = loader.load();
         MenuController controller = loader.getController();
         controller.setControlador(controlador);
 
-        stage.setScene(new Scene(root));
+        mostrarRoot(root);
         stage.show();
     }
 
@@ -42,7 +53,7 @@ public class VistaFX {
         PrepJuegoController controller = loader.getController();
         controller.setControlador(controlador);
 
-        stage.setScene(new Scene(root));
+        mostrarRoot(root);
     }
 
     public void cambiarSceneJugando(ArrayList<Jugador> jugadores) throws IOException {
@@ -52,16 +63,17 @@ public class VistaFX {
         controller.setControlador(controlador);
         controller.mostrarJugadores(jugadores);
 
-        stage.setScene(new Scene(root));
+        mostrarRoot(root);
     }
 
-    public void cambiarSceneFin() throws IOException {
+    public void cambiarSceneFin(String perdedor) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/edu/unlu/poo/juego/SceneFin.fxml"));
         Parent root = loader.load();
         FinController controller = loader.getController();
         controller.setControlador(controlador);
+        controller.setResultado(perdedor + " perdió...");
 
-        stage.setScene(new Scene(root));
+        mostrarRoot(root);
     }
 
     public void salir(){
