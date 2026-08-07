@@ -4,9 +4,11 @@ import ar.edu.unlu.poo.juego.controlador.ControladorConsola;
 import ar.edu.unlu.poo.juego.modelo.Partida;
 import ar.edu.unlu.poo.juego.vista.VistaConsola;
 
+import java.rmi.RemoteException;
+
 public class AppConsola {
-    static void main(String[] args) {
-        ControladorConsola c = new ControladorConsola(new Partida(), new VistaConsola());
+    static void main(String[] args) throws RemoteException {
+        ControladorConsola c = new ControladorConsola(new VistaConsola());
         c.menu();
     }
 }

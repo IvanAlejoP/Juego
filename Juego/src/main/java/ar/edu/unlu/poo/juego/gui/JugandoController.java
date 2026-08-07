@@ -37,19 +37,17 @@ public class JugandoController {
     private Label Turno;
 
     @FXML
+    private Button btnTomarCarta;
+
+    @FXML
     private Button btnDescartar;
 
     @FXML
     private Button btnTerminarTurno;
 
-    // Orden visual alrededor de la mesa, empezando por "vos" (abajo)
     private List<FlowPane> paneles;
-
-    // A qué panel corresponde cada jugador
     private final Map<Jugador, FlowPane> panelDeJugador = new LinkedHashMap<>();
-
     private Jugador humano;
-
     private final List<CartaGUI> seleccionadasParaDescarte = new ArrayList<>();
 
     @FXML
@@ -66,34 +64,30 @@ public class JugandoController {
         }
     }
 
-    public void mostrarJugadores(ArrayList<Jugador> jugadores) {
+    public void mostrarJugadores(ArrayList<Jugador> jugadores, Jugador yo, Jugador jugadorEnTurno) {
+        this.humano = yo;
 
-        ocultarPaneles();
+        boolean esMiTurno = (jugadorEnTurno != null && yo != null &&
+                jugadorEnTurno.getNombre().equalsIgnoreCase(yo.getNombre()));
+
+        if (btnTomarCarta != null) btnTomarCarta.setDisable(!esMiTurno);
+        if (btnDescartar != null) btnDescartar.setDisable(!esMiTurno);
+
         panelDeJugador.clear();
+        List<Jugador> jugadoresRotados = rotarDesdeHumano(jugadores);
 
-        humano = jugadores.stream()
-                .filter(j -> j instanceof JugadorHumano)
-                .findFirst()
-                .orElse(null);
-
-        List<Jugador> ordenVisual = rotarDesdeHumano(jugadores);
-
-        for (int i = 0; i < ordenVisual.size(); i++) {
-            Jugador jugador = ordenVisual.get(i);
+        for (int i = 0; i < jugadoresRotados.size() && i < paneles.size(); i++) {
+            Jugador j = jugadoresRotados.get(i);
             FlowPane panel = paneles.get(i);
-
             panel.setVisible(true);
             panel.setManaged(true);
-            panelDeJugador.put(jugador, panel);
-
-            mostrarMano(panel, jugador);
+            panelDeJugador.put(j, panel);
+            mostrarMano(panel, j);
         }
 
-        procesarTurno();
+        actualizarTurno(jugadorEnTurno);
     }
 
-    // Reordena la lista de jugadores para que "vos" quedes siempre abajo, respetando
-    // el orden real de turnos (solo cambia cómo se acomodan en la mesa, no la lógica)
     private List<Jugador> rotarDesdeHumano(ArrayList<Jugador> jugadores) {
         List<Jugador> resultado = new ArrayList<>();
 
@@ -102,37 +96,44 @@ public class JugandoController {
             return resultado;
         }
 
-        int indiceHumano = jugadores.indexOf(humano);
+        int indiceHumano = -1;
+        for (int i = 0; i < jugadores.size(); i++) {
+            if (jugadores.get(i).getNombre().equalsIgnoreCase(humano.getNombre())) {
+                indiceHumano = i;
+                break;
+            }
+        }
+
+        if (indiceHumano == -1) {
+            resultado.addAll(jugadores);
+            return resultado;
+        }
+
         for (int i = 0; i < jugadores.size(); i++) {
             resultado.add(jugadores.get((indiceHumano + i) % jugadores.size()));
         }
         return resultado;
     }
 
-    // Requisito 0: solo se ven los valores de TUS cartas; las del resto se muestran boca abajo
     private void mostrarMano(FlowPane panel, Jugador jugador) {
-
         panel.getChildren().clear();
 
-        boolean esHumano = (jugador == humano);
+        boolean esHumano = (humano != null && jugador.getNombre().equalsIgnoreCase(humano.getNombre()));
 
         for (Carta carta : jugador.getMano().getMano()) {
             CartaGUI cartaGUI = new CartaGUI(carta, !esHumano);
-            cartaGUI.setBloqueada(true); // arranca bloqueada; procesarTurno() habilita lo que corresponda
+            cartaGUI.setBloqueada(true);
             panel.getChildren().add(cartaGUI);
         }
     }
 
     public void actualizarTurno(Jugador jugador) {
-        if (jugador != null) {
+        if (jugador != null && Turno != null) {
             Turno.setText("Turno: " + jugador.getNombre());
         }
     }
 
-    // Punto central: decide qué se puede clickear según de quién es el turno.
-    // Requisito 1: si no es tu turno, queda tdo bloqueado hasta que la IA termine de jugar.
     private void procesarTurno() {
-
         limpiarSeleccion();
         ocultarBotonesDeDescarte();
         bloquearTodasLasCartas();
@@ -148,7 +149,6 @@ public class JugandoController {
         if (jugadorEnTurno instanceof JugadorHumano) {
             habilitarFaseDeRobo();
         } else {
-            // Pequeña pausa para que se note que la IA "está jugando" antes de resolver su turno
             PauseTransition espera = new PauseTransition(Duration.seconds(0.8));
             espera.setOnFinished(e -> jugarTurnoIA(jugadorEnTurno));
             espera.play();
@@ -160,8 +160,6 @@ public class JugandoController {
         finalizarTurno();
     }
 
-    // Requisito 2 (parte 1): solo se pueden clickear las cartas del jugador siguiente,
-    // que es a quien realmente se le puede robar una carta
     private void habilitarFaseDeRobo() {
         Jugador siguiente = controlador.getSiguienteJugador(humano);
         FlowPane panelSiguiente = panelDeJugador.get(siguiente);
@@ -178,8 +176,6 @@ public class JugandoController {
         }
     }
 
-    // Al clickear una carta del contrincante, el resto se bloquea (requisito 2) y se pasa
-    // a la fase de descarte
     private void robarCarta(int indice) {
         bloquearTodasLasCartas();
 
@@ -189,25 +185,29 @@ public class JugandoController {
         habilitarFaseDeDescarte();
     }
 
-    // Requisito 2 (parte 2): ahora solo tus propias cartas son seleccionables (hasta 2)
     private void habilitarFaseDeDescarte() {
         FlowPane panelHumano = panelDeJugador.get(humano);
 
-        for (Node nodo : panelHumano.getChildren()) {
-            CartaGUI cartaGUI = (CartaGUI) nodo;
-            cartaGUI.setBloqueada(false);
-            cartaGUI.setAccionAlHacerClick(() -> alternarSeleccionParaDescarte(cartaGUI));
+        if (panelHumano != null) {
+            for (Node nodo : panelHumano.getChildren()) {
+                CartaGUI cartaGUI = (CartaGUI) nodo;
+                cartaGUI.setBloqueada(false);
+                cartaGUI.setAccionAlHacerClick(() -> alternarSeleccionParaDescarte(cartaGUI));
+            }
         }
 
-        btnTerminarTurno.setVisible(true);
-        btnTerminarTurno.setManaged(true);
-        btnDescartar.setVisible(true);
-        btnDescartar.setManaged(true);
-        btnDescartar.setDisable(true);
+        if (btnTerminarTurno != null) {
+            btnTerminarTurno.setVisible(true);
+            btnTerminarTurno.setManaged(true);
+        }
+        if (btnDescartar != null) {
+            btnDescartar.setVisible(true);
+            btnDescartar.setManaged(true);
+            btnDescartar.setDisable(true);
+        }
     }
 
     private void alternarSeleccionParaDescarte(CartaGUI cartaGUI) {
-
         if (cartaGUI.isSeleccionada()) {
             cartaGUI.deseleccionar();
             seleccionadasParaDescarte.remove(cartaGUI);
@@ -219,12 +219,13 @@ public class JugandoController {
             seleccionadasParaDescarte.add(cartaGUI);
         }
 
-        // Si hay exactamente 2 cartas del mismo valor seleccionadas, se habilita "Descartar Par"
         boolean sonPar = seleccionadasParaDescarte.size() == 2
                 && seleccionadasParaDescarte.get(0).getCarta().getValor()
                 == seleccionadasParaDescarte.get(1).getCarta().getValor();
 
-        btnDescartar.setDisable(!sonPar);
+        if (btnDescartar != null) {
+            btnDescartar.setDisable(!sonPar);
+        }
     }
 
     @FXML
@@ -256,7 +257,6 @@ public class JugandoController {
         procesarTurno();
     }
 
-    // Requisito 3: al terminar la partida se muestra la pantalla de Fin con el perdedor
     private void finDelJuego() {
         bloquearTodasLasCartas();
         ocultarBotonesDeDescarte();
@@ -281,11 +281,15 @@ public class JugandoController {
     }
 
     private void ocultarBotonesDeDescarte() {
-        btnDescartar.setVisible(false);
-        btnDescartar.setManaged(false);
-        btnDescartar.setDisable(true);
-        btnTerminarTurno.setVisible(false);
-        btnTerminarTurno.setManaged(false);
+        if (btnDescartar != null) {
+            btnDescartar.setVisible(false);
+            btnDescartar.setManaged(false);
+            btnDescartar.setDisable(true);
+        }
+        if (btnTerminarTurno != null) {
+            btnTerminarTurno.setVisible(false);
+            btnTerminarTurno.setManaged(false);
+        }
     }
 
     private void bloquearTodasLasCartas() {

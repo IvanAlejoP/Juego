@@ -48,4 +48,6 @@ public interface IPartida extends IObservableRemoto{
 
     void mezclarMano(Jugador jugador) throws RemoteException;
 
+    void setCantidadJugadores(int cantidad) throws RemoteException;
+
 }

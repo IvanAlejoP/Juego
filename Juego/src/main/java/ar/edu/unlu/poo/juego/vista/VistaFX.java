@@ -1,3 +1,4 @@
+
 package ar.edu.unlu.poo.juego.vista;
 
 import ar.edu.unlu.poo.juego.controlador.ControladorFX;
@@ -18,21 +19,22 @@ public class VistaFX {
     private final Stage stage;
     private ControladorFX controlador;
     private Scene scene;
+    private JugandoController jugandoControllerActual;
+    private PrepJuegoController prepControllerActual;
 
-    public VistaFX(Stage stage){
+    public VistaFX(Stage stage) {
         this.stage = stage;
     }
 
-    public void setControlador(ControladorFX controlador){
+    public void setControlador(ControladorFX controlador) {
         this.controlador = controlador;
     }
 
-    public void mostrarRoot(Parent root){
-        if(scene == null){
+    public void mostrarRoot(Parent root) {
+        if (scene == null) {
             scene = new Scene(root);
             stage.setScene(scene);
-        }
-        else{
+        } else {
             scene.setRoot(root);
         }
     }
@@ -50,18 +52,18 @@ public class VistaFX {
     public void cambiarScenePrepJuego() throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/edu/unlu/poo/juego/ScenePrepJuego.fxml"));
         Parent root = loader.load();
-        PrepJuegoController controller = loader.getController();
-        controller.setControlador(controlador);
+        prepControllerActual = loader.getController();
+        prepControllerActual.setControlador(controlador);
 
         mostrarRoot(root);
     }
 
-    public void cambiarSceneJugando(ArrayList<Jugador> jugadores) throws IOException {
+    public void cambiarSceneJugando(ArrayList<Jugador> jugadores, Jugador yo) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/edu/unlu/poo/juego/SceneJugando.fxml"));
         Parent root = loader.load();
-        JugandoController controller = loader.getController();
-        controller.setControlador(controlador);
-        controller.mostrarJugadores(jugadores);
+        jugandoControllerActual = loader.getController();
+        jugandoControllerActual.setControlador(controlador);
+        jugandoControllerActual.mostrarJugadores(jugadores, yo, controlador.getJugadorEnTurno());
 
         mostrarRoot(root);
     }
@@ -76,10 +78,19 @@ public class VistaFX {
         mostrarRoot(root);
     }
 
-    public void salir(){
-        stage.close();
+    public void refrescarSalaEspera(ArrayList<Jugador> jugadores) {
+        if (prepControllerActual != null) {
+            prepControllerActual.actualizarListaJugadores(jugadores);
+        }
     }
 
-    public void refrescarPantalla() {//METODO PARA ACTUALIZAR PANTALLA, HAY QUE VER COMO LO HACEMOS
+    public void refrescarPantalla(ArrayList<Jugador> jugadores, Jugador yo, Jugador jugadorEnTurno) {
+        if (jugandoControllerActual != null) {
+            jugandoControllerActual.mostrarJugadores(jugadores, yo, jugadorEnTurno);
+        }
+    }
+
+    public void salir() {
+        stage.close();
     }
 }

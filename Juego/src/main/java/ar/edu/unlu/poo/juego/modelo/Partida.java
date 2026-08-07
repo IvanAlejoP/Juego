@@ -9,11 +9,22 @@ import java.util.Collections;
 public class Partida extends ObservableRemoto implements IPartida {
     private ArrayList<Jugador> jugadores;
     private Mazo mazo;
-    private static final int CANTIDAD_JUGADORES_REQUERIDOS = 2; // Ajustar según las reglas de tu juego
+    private int cantidadJugadoresRequeridos = 2; // Valor por defecto configurable dinámicamente
 
     public Partida() throws RemoteException {
         this.jugadores = new ArrayList<>();
         this.mazo = new Mazo();
+    }
+
+    @Override
+    public void setCantidadJugadores(int cantidad) throws RemoteException {
+        if (cantidad >= 2 && cantidad <= 4) {
+            this.cantidadJugadoresRequeridos = cantidad;
+        }
+    }
+
+    public int getCantidadJugadoresRequeridos() throws RemoteException {
+        return this.cantidadJugadoresRequeridos;
     }
 
     // GETTERS
@@ -75,8 +86,8 @@ public class Partida extends ObservableRemoto implements IPartida {
         // Notifica a los observadores que un nuevo jugador se ha unido
         notificarObservadores(EventoJuego.JUGADOR_AGREGADO);
 
-        // Si se alcanza la cantidad de jugadores necesaria, se inicia la partida automáticamente
-        if (this.jugadores.size() == CANTIDAD_JUGADORES_REQUERIDOS) {
+        // Si se alcanza la cantidad de jugadores requerida, se inicia la partida automáticamente
+        if (this.jugadores.size() == this.cantidadJugadoresRequeridos) {
             iniciar();
         }
     }

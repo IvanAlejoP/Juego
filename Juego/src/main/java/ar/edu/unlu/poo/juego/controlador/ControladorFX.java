@@ -1,31 +1,41 @@
 package ar.edu.unlu.poo.juego.controlador;
 
 import ar.edu.unlu.poo.juego.modelo.*;
-import ar.edu.unlu.poo.juego.observer.Observador;
 import ar.edu.unlu.poo.juego.vista.VistaFX;
+import ar.edu.unlu.rmimvc.cliente.IControladorRemoto;
+import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
+import javafx.application.Platform;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 
-public class ControladorFX implements Observador {
-    private Partida partida;
+public class ControladorFX implements IControladorRemoto {
+    private IPartida partida;
     private VistaFX vista;
+    private Jugador yo;
 
-    public ControladorFX(Partida partida, VistaFX vista){
-        this.partida = partida;
+    public ControladorFX(VistaFX vista) throws RemoteException {
         this.vista = vista;
-        this.partida.agregarObservador(this);
     }
 
-    public void cantJugadores(int cantJugadores){
-        for(int i=0; i<cantJugadores-1; i++){
-            Jugador j = new JugadorIA("IA");
-            partida.agregarJugador(j);
+    /**
+     * Registrar jugador local en la partida remota.
+     */
+    public void registrarJugador(String nombre) {
+        try {
+            this.yo = new JugadorHumano(nombre.trim());
+            partida.agregarJugador(this.yo);
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
-        Jugador j = new JugadorHumano("TU");
-        partida.agregarJugador(j);
     }
 
+    public Jugador getYo() {
+        return this.yo;
+    }
+
+    // NAVEGACIÓN Y VISTA
     public void cambiarSceneMenu() throws IOException {
         vista.cambiarSceneMenu();
     }
@@ -34,65 +44,159 @@ public class ControladorFX implements Observador {
         vista.cambiarScenePrepJuego();
     }
 
-    public void cambiarSceneJugando() throws IOException {
-        partida.iniciar();
-        vista.cambiarSceneJugando(partida.getJugadores());
-    }
-
     public void cambiarSceneFin() throws IOException {
-        Jugador perdedor = partida.getJugadorEnTurno();
-        String nombre = (perdedor != null) ? perdedor.getNombre() : "";
-        vista.cambiarSceneFin(nombre);
+        Jugador perdedor = getJugadorEnTurno();
+        String nombrePerdedor = (perdedor != null) ? perdedor.getNombre() : "Alguien";
+        vista.cambiarSceneFin(nombrePerdedor);
     }
 
-    public void salir(){
+    public void salir() {
         vista.salir();
     }
 
-    //METODOS DE PARTIDA EXPUESTOS PARA LA LOGICA DE LA GUI DE JUEGO (JugandoController)
+    // DELEGACIÓN A LA PARTIDA REMOTA
 
-    public Jugador getJugadorEnTurno(){
-        return partida.getJugadorEnTurno();
+    public void cantJugadores(int cantidad) {
+        try {
+            partida.setCantidadJugadores(cantidad);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
-    public Jugador getSiguienteJugador(Jugador jugador){
-        return partida.getSiguienteJugador(jugador);
+    public Jugador getJugadorEnTurno() {
+        try {
+            return partida.getJugadorEnTurno();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    public ArrayList<Jugador> getJugadores(){
-        return partida.getJugadores();
+    public Jugador getSiguienteJugador(Jugador jugador) {
+        try {
+            return partida.getSiguienteJugador(jugador);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    public void tomarCarta(Jugador jugador, int indice){
-        partida.tomarCarta(jugador, indice);
+    public ArrayList<Jugador> getJugadores() {
+        try {
+            return partida.getJugadores();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
-    public boolean sonPares(Jugador jugador, int cartaUno, int cartaDos){
-        return partida.sonPares(jugador, cartaUno, cartaDos);
+    public void tomarCarta(Jugador jugador, int indice) {
+        try {
+            partida.tomarCarta(jugador, indice);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void descartarPares(Jugador jugador, Carta uno, Carta dos){
-        partida.descartarPares(jugador, uno, dos);
+    public boolean sonPares(Jugador jugador, int cartaUno, int cartaDos) {
+        try {
+            return partida.sonPares(jugador, cartaUno, cartaDos);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
-    public void pasarTurno(){
-        partida.pasarTurno();
+    public void descartarPares(Jugador jugador, Carta uno, Carta dos) {
+        try {
+            partida.descartarPares(jugador, uno, dos);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void revisarJugadores(){
-        partida.revisarJugadores();
+    public void mezclarMano(Jugador jugador) {
+        try {
+            partida.mezclarMano(jugador);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
-    public boolean juegoTerminado(){
-        return partida.juegoTerminado();
+    public void pasarTurno() {
+        try {
+            partida.pasarTurno();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void jugarIA(Jugador jugador){
-        partida.jugarIA(jugador);
+    public boolean juegoTerminado() {
+        try {
+            return partida.juegoTerminado();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public void jugarIA(Jugador jugadorIA) {
+        try {
+            partida.jugarIA(jugadorIA);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void revisarJugadores() {
+        try {
+            partida.revisarJugadores();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // MÉTODOS OBLIGATORIOS DE RMI-MVC
+
+    @Override
+    public <T extends IObservableRemoto> void setModeloRemoto(T t) throws RemoteException {
+        this.partida = (IPartida) t;
     }
 
     @Override
-    public void actualizar() {
-        vista.refrescarPantalla();
+    public void actualizar(IObservableRemoto modelo, Object evento) throws RemoteException {
+        if (evento instanceof EventoJuego) {
+            EventoJuego e = (EventoJuego) evento;
+
+            // Se usa Platform.runLater porque los eventos RMI entran en hilos de red
+            Platform.runLater(() -> {
+                try {
+                    switch (e) {
+                        case JUGADOR_AGREGADO:
+                            vista.refrescarSalaEspera(getJugadores());
+                            break;
+
+                        case INICIO_PARTIDA:
+                            vista.cambiarSceneJugando(getJugadores(), this.yo);
+                            break;
+
+                        case TURNO_CAMBIADO:
+                        case CARTA_TOMADA:
+                        case PARES_DESCARTADOS:
+                            vista.refrescarPantalla(getJugadores(), this.yo, getJugadorEnTurno());
+                            break;
+
+                        case FIN_DE_JUEGO:
+                            Jugador perdedor = getJugadorEnTurno();
+                            String nombrePerdedor = (perdedor != null) ? perdedor.getNombre() : "Alguien";
+                            vista.cambiarSceneFin(nombrePerdedor);
+                            break;
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            });
+        }
     }
 }

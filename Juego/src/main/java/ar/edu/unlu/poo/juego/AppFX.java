@@ -16,9 +16,8 @@ public class AppFX extends Application{
     @Override
     public void start(Stage stage) throws IOException {
 
-        Partida partida = new Partida();
         VistaFX vista = new VistaFX(stage);
-        ControladorFX controlador = new ControladorFX(partida, vista);
+        ControladorFX controlador = new ControladorFX(vista);
 
         vista.setControlador(controlador);
 

@@ -3,8 +3,8 @@ package ar.edu.unlu.poo.juego.modelo;
 import java.util.Objects;
 
 public class Carta {
-    private Palo palo;
-    private Valor valor;
+    private final Palo palo;
+    private final Valor valor;
 
     public Carta(Palo palo, Valor valor){
         this.palo = palo;
