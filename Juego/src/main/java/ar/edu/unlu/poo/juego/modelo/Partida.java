@@ -1,110 +1,152 @@
 package ar.edu.unlu.poo.juego.modelo;
 
-import ar.edu.unlu.poo.juego.observer.Observable;
-import ar.edu.unlu.poo.juego.observer.Observador;
+import ar.edu.unlu.rmimvc.observer.ObservableRemoto;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class Partida implements Observable {
+public class Partida extends ObservableRemoto implements IPartida {
     private ArrayList<Jugador> jugadores;
     private Mazo mazo;
-    private ArrayList<Observador> observadores;
+    private static final int CANTIDAD_JUGADORES_REQUERIDOS = 2; // Ajustar según las reglas de tu juego
 
-    public Partida(){
+    public Partida() throws RemoteException {
         this.jugadores = new ArrayList<>();
         this.mazo = new Mazo();
-        this.observadores = new ArrayList<>();
     }
 
-    //GETTERS
-    public Jugador getJugadorEnTurno(){
-        for(Jugador j : jugadores){
-            if(j.getEstado() == EstadoJugador.JUGANDO){
+    // GETTERS
+    @Override
+    public Jugador getJugadorEnTurno() throws RemoteException {
+        for (Jugador j : jugadores) {
+            if (j.getEstado() == EstadoJugador.JUGANDO) {
                 return j;
             }
         }
         return null;
     }
 
-    public Jugador getSiguienteJugador(Jugador jugador){
+    @Override
+    public Jugador getSiguienteJugador(Jugador jugador) throws RemoteException {
         int siguiente = 0;
-        for(int i=0; i<jugadores.size(); i++){
-            if(jugadores.get(i) == jugador){
+        for (int i = 0; i < jugadores.size(); i++) {
+            if (jugadores.get(i).equals(jugador)) {
                 siguiente = (i + 1) % jugadores.size();
 
-                if(jugadores.get(siguiente).getEstado() == EstadoJugador.TERMINO && !juegoTerminado()){
+                // Si el siguiente jugador ya terminó, buscamos recursivamente al siguiente en juego
+                if (jugadores.get(siguiente).getEstado() == EstadoJugador.TERMINO && !juegoTerminado()) {
                     return getSiguienteJugador(jugadores.get(siguiente));
                 }
 
                 break;
             }
         }
-
         return jugadores.get(siguiente);
     }
 
-    public ArrayList<Jugador> getJugadores(){//MAL
+    @Override
+    public ArrayList<Jugador> getJugadores() throws RemoteException {
         return this.jugadores;
     }
 
-
-    public int getCantidadJugadores(){
+    @Override
+    public int getCantidadJugadores() throws RemoteException {
         return this.jugadores.size();
     }
 
-
-    //SETTERS
-    public void setPrimerJugadorEnTurno(){
-        this.jugadores.getFirst().setEstado(EstadoJugador.JUGANDO);
+    // SETTERS
+    @Override
+    public void setPrimerJugadorEnTurno() throws RemoteException {
+        for (Jugador j : jugadores) {
+            j.setEstado(EstadoJugador.ESPERANDO);
+        }
+        if (!jugadores.isEmpty()) {
+            this.jugadores.getFirst().setEstado(EstadoJugador.JUGANDO);
+        }
     }
 
+    // MÉTODOS DE LÓGICA DE JUEGO
 
+    @Override
+    public void agregarJugador(Jugador j) throws RemoteException {
+        this.jugadores.add(j);
 
-    //METODOS MIXTOS
-    public void iniciar(){
+        // Notifica a los observadores que un nuevo jugador se ha unido
+        notificarObservadores(EventoJuego.JUGADOR_AGREGADO);
+
+        // Si se alcanza la cantidad de jugadores necesaria, se inicia la partida automáticamente
+        if (this.jugadores.size() == CANTIDAD_JUGADORES_REQUERIDOS) {
+            iniciar();
+        }
+    }
+
+    @Override
+    public void iniciar() throws RemoteException {
         repartirCartas();
         setPrimerJugadorEnTurno();
 
-        notificarObservadores();
+        // Notifica el inicio de la partida a todos los clientes
+        notificarObservadores(EventoJuego.INICIO_PARTIDA);
     }
 
-    public void descartarPares(Jugador jugador, Carta uno, Carta dos){
+    @Override
+    public void pasarTurno() throws RemoteException {
+        revisarJugadores();
+
+        if (juegoTerminado()) {
+            notificarObservadores(EventoJuego.FIN_DE_JUEGO);
+            return;
+        }
+
+        Jugador actual = getJugadorEnTurno();
+        if (actual != null) {
+            Jugador siguiente = getSiguienteJugador(actual);
+
+            // Solo pasa a ESPERANDO si el jugador no ha terminado la partida
+            if (actual.getEstado() != EstadoJugador.TERMINO) {
+                actual.setEstado(EstadoJugador.ESPERANDO);
+            }
+
+            siguiente.setEstado(EstadoJugador.JUGANDO);
+        }
+
+        notificarObservadores(EventoJuego.TURNO_CAMBIADO);
+    }
+
+    @Override
+    public void tomarCarta(Jugador jugador, int carta) throws RemoteException {
+        jugador.tomarCarta(getSiguienteJugador(jugador).cartaRobada(carta));
+        revisarJugadores();
+
+        notificarObservadores(EventoJuego.CARTA_TOMADA);
+    }
+
+    @Override
+    public void descartarPares(Jugador jugador, Carta uno, Carta dos) throws RemoteException {
         jugador.descartarPares(uno, dos);
+        revisarJugadores();
+
+        notificarObservadores(EventoJuego.PARES_DESCARTADOS);
     }
 
-    public boolean sonPares(Jugador jugador, int cartaUno, int cartaDos){
+    @Override
+    public boolean sonPares(Jugador jugador, int cartaUno, int cartaDos) throws RemoteException {
         return jugador.getCarta(cartaUno).getValor() == jugador.getCarta(cartaDos).getValor();
     }
 
-    public boolean esCartaValida(Jugador jugador, int indice){
+    @Override
+    public boolean esCartaValida(Jugador jugador, int indice) throws RemoteException {
         return jugador.existeCarta(indice);
     }
 
-    public void agregarJugador(Jugador j){
-        this.jugadores.add(j);
-    }
-
-    public void tomarCarta(Jugador jugador, int carta){
-        jugador.tomarCarta(getSiguienteJugador(jugador).cartaRobada(carta));
-
-        notificarObservadores();
-    }
-
-    public void pasarTurno(){
-        Jugador actual = getJugadorEnTurno();
-        Jugador siguiente = getSiguienteJugador(actual);
-
-        actual.setEstado(EstadoJugador.ESPERANDO);
-        siguiente.setEstado(EstadoJugador.JUGANDO);
-    }
-
-    public void repartirCartas(){
+    @Override
+    public void repartirCartas() throws RemoteException {
         Collections.shuffle(jugadores);
 
-        while(!mazo.mazoVacio()){
-            for(Jugador j : jugadores){
-                if(mazo.mazoVacio()){
+        while (!mazo.mazoVacio()) {
+            for (Jugador j : jugadores) {
+                if (mazo.mazoVacio()) {
                     return;
                 }
                 j.tomarCarta(mazo.sacarCarta());
@@ -112,21 +154,23 @@ public class Partida implements Observable {
         }
     }
 
-    public boolean opcionValidaParaTomar(Jugador jugador, int indice) {
+    @Override
+    public boolean opcionValidaParaTomar(Jugador jugador, int indice) throws RemoteException {
         return getSiguienteJugador(jugador).existeCarta(indice);
     }
 
-    public void jugarIA(Jugador jugador){
-        //TOMA CARTA
-        int rand = (int)(Math.random() * getSiguienteJugador(jugador).getTamanioMano());
+    @Override
+    public void jugarIA(Jugador jugador) throws RemoteException {
+        // TOMA CARTA
+        int rand = (int) (Math.random() * getSiguienteJugador(jugador).getTamanioMano());
         tomarCarta(jugador, rand);
 
-        //DESCARTA Y MEZCLA
-        for(Carta c : jugador.getMano().getMano()){
-            for(Carta k : jugador.getMano().getMano()){
-                if(!c.equals(k)){
-                    if(c.getValor() == k.getValor()){
-                        jugador.descartarPares(c, k);
+        // DESCARTA Y MEZCLA
+        for (Carta c : jugador.getMano().getMano()) {
+            for (Carta k : jugador.getMano().getMano()) {
+                if (!c.equals(k)) {
+                    if (c.getValor() == k.getValor()) {
+                        descartarPares(jugador, c, k);
                         jugador.mezclarMano();
                         return;
                     }
@@ -135,47 +179,27 @@ public class Partida implements Observable {
         }
     }
 
-    public void revisarJugadores(){
-        for(Jugador j : jugadores){
+    @Override
+    public void revisarJugadores() throws RemoteException {
+        for (Jugador j : jugadores) {
             j.revisarse();
         }
-
-        notificarObservadores();
     }
 
-    public boolean juegoTerminado(){
-        int contador = 0;
-        for(Jugador j : jugadores){
-            if(j.getEstado() == EstadoJugador.TERMINO){
-                contador++;
+    @Override
+    public boolean juegoTerminado() throws RemoteException {
+        int contadorTerminados = 0;
+        for (Jugador j : jugadores) {
+            if (j.getEstado() == EstadoJugador.TERMINO) {
+                contadorTerminados++;
             }
         }
-        return contador == (getCantidadJugadores() - 1);
+        return contadorTerminados == (getCantidadJugadores() - 1);
     }
 
-    public void mezclarMano(Jugador jugador){
+    @Override
+    public void mezclarMano(Jugador jugador) throws RemoteException {
         jugador.mezclarMano();
-
-        notificarObservadores();
-    }
-
-
-
-    //METODOS DE OBSERVADOR
-    @Override
-    public void agregarObservador(Observador observador) {
-        this.observadores.add(observador);
-    }
-
-    @Override
-    public void quitarObservador(Observador observador) {
-        this.observadores.remove(observador);
-    }
-
-    @Override
-    public void notificarObservadores() {
-        for (Observador observador : observadores) {
-            observador.actualizar();
-        }
+        notificarObservadores(EventoJuego.TURNO_CAMBIADO);
     }
 }

@@ -1,6 +1,7 @@
 module ar.edu.unlu.poo.juego {
     requires javafx.controls;
     requires javafx.fxml;
+    requires java.rmi;
 
     requires org.controlsfx.controls;
     requires com.dlsc.formsfx;
@@ -8,9 +9,12 @@ module ar.edu.unlu.poo.juego {
     requires com.almasb.fxgl.all;
     requires javafx.graphics;
     requires javafx.base;
+    requires java.desktop;
+    requires LibreriaRMIMVC;
 
     opens ar.edu.unlu.poo.juego to javafx.fxml;
     opens ar.edu.unlu.poo.juego.controlador to javafx.fxml;
     exports ar.edu.unlu.poo.juego;
+    exports ar.edu.unlu.poo.juego.modelo;
     opens ar.edu.unlu.poo.juego.gui to javafx.fxml;
 }

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class VistaConsola {
-    private Scanner sc = new Scanner(System.in);
+    private final Scanner sc = new Scanner(System.in);
 
     public int obtenerOpcion(){
         return sc.nextInt();
@@ -24,7 +24,6 @@ public class VistaConsola {
         System.out.print(mensaje);
     }
 
-
     public void mostrarMenu() {
         System.out.println("\n-MENU");
         System.out.println("[1]JUGAR");
@@ -39,33 +38,31 @@ public class VistaConsola {
         System.out.print("Opcion: ");
     }
 
-    public void mostrarJugadores(ArrayList<Jugador> jugadores){
+    /**
+     * Muestra a los jugadores del juego.
+     * Solo revela el contenido de las cartas del jugador local ('yo').
+     * Para los contrincantes muestra la cantidad de cartas pero con valores ocultos '[X]'.
+     */
+    public void mostrarJugadores(ArrayList<Jugador> jugadores, Jugador yo) {
         System.out.println();
-        for(Jugador j : jugadores){
-            if(j instanceof JugadorHumano){
-                if(j.jugadorTermino()){
-                    System.out.printf("[%s]TERMINO...", j.getNombre());
-                }
-                else{
-                    System.out.printf("[%s][%d]: ", j.getNombre(),j.getTamanioMano());
-                    for(Carta c : j.getMano().getMano()){
-                        if(c.getValor() == Valor.JOKER){
+        for (Jugador j : jugadores) {
+            if (j.jugadorTermino()) {
+                System.out.printf("[%s] TERMINÓ...\n", j.getNombre());
+            } else {
+                System.out.printf("[%s] (Cartas: %d): ", j.getNombre(), j.getTamanioMano());
+
+                // Si el jugador de la lista es MI JUGADOR (yo), le muestro las cartas visibles
+                if (yo != null && j.getNombre().equalsIgnoreCase(yo.getNombre())) {
+                    for (Carta c : j.getMano().getMano()) {
+                        if (c.getValor() == Valor.JOKER) {
                             System.out.print("[J]");
-                        }
-                        else{
+                        } else {
                             System.out.printf("[%d]", c.getValor().getNumero());
                         }
                     }
-                }
-                System.out.println();
-            }
-            else if(j instanceof JugadorIA){
-                if(j.jugadorTermino()){
-                    System.out.printf("[%s]TERMINO...", j.getNombre());
-                }
-                else{
-                    System.out.printf("[%s][%d]: ", j.getNombre(),j.getTamanioMano());
-                    for(Carta c : j.getMano().getMano()){
+                } else {
+                    // Para cualquier otro jugador (humano contrincante o IA), ocultamos las cartas
+                    for (int i = 0; i < j.getTamanioMano(); i++) {
                         System.out.print("[X]");
                     }
                 }
@@ -75,6 +72,6 @@ public class VistaConsola {
     }
 
     public void mostrarPerdedor(Jugador jugadorEnTurno) {
-        System.out.printf("\n[%s]PERDIO...\n", jugadorEnTurno.getNombre());
+        System.out.printf("\n[%s] PERDIÓ...\n", jugadorEnTurno.getNombre());
     }
 }

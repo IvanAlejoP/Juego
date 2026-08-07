@@ -1,160 +1,185 @@
 package ar.edu.unlu.poo.juego.controlador;
 
 import ar.edu.unlu.poo.juego.modelo.*;
-import ar.edu.unlu.poo.juego.observer.Observador;
 import ar.edu.unlu.poo.juego.vista.VistaConsola;
+import ar.edu.unlu.rmimvc.cliente.IControladorRemoto;
+import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
 
-public class ControladorConsola implements Observador {
-    private final Partida partida;
-    private final VistaConsola vista;
+import javax.swing.*;
+import java.rmi.RemoteException;
 
-    public ControladorConsola(Partida partida, VistaConsola vista){
-        this.partida = partida;
+public class ControladorConsola implements IControladorRemoto {
+    private IPartida partida;
+    private VistaConsola vista;
+    private Jugador yo;
+
+    public ControladorConsola(VistaConsola vista) throws RemoteException {
         this.vista = vista;
-        this.partida.agregarObservador(this);
     }
 
-    public void menu(){
-        while(true){
-            vista.mostrarMenu();
-            switch (vista.obtenerOpcion()){
-                case 1:
-                    vista.mostrarMensaje("\nPreparando Juego...");
-                    cantJugadores();
-                    vista.mostrarMensaje("\nJugando!!!");
-                    jugando();
-                    vista.mostrarPerdedor(partida.getJugadorEnTurno());
-                    vista.mostrarMensaje("\nHasta Luego!");
-                    return;
-                case 2:
-                    vista.mostrarMensaje("\nHasta Luego!");
-                    return;
-                default:
-                    vista.mostrarMensaje("\nOpcion invalida!");
-                    break;
+    /**
+     * Registro inicial del jugador.
+     */
+    public void menu() throws RemoteException {
+        String nombre = JOptionPane.showInputDialog("Ingrese su nombre de jugador:");
+
+        while (nombre == null || nombre.trim().isEmpty()) {
+            vista.mostrarMensaje("El nombre no puede estar vacío.");
+            nombre = JOptionPane.showInputDialog("Ingrese su nombre de jugador:");
+        }
+
+        this.yo = new JugadorHumano(nombre.trim());
+        vista.mostrarMensaje("\n¡Registro exitoso! Bienvenido, " + this.yo.getNombre());
+
+        // Registra al jugador en la partida remota
+        partida.agregarJugador(this.yo);
+        vista.mostrarMensaje("Esperando a que se completen los jugadores...");
+    }
+
+    /**
+     * Procesa las acciones del turno únicamente para el cliente local.
+     */
+    private void procesarTurnoLocal() {
+        try {
+            boolean turnoFinalizado = false;
+
+            while (!turnoFinalizado) {
+                vista.mostrarOpcionesDeJuego();
+                int opcion = vista.obtenerOpcion();
+
+                switch (opcion) {
+                    case 1: // TOMAR CARTA Y DESCARTAR
+                        turnoTomarCarta(this.yo);
+                        turnoDescartarCartas(this.yo);
+                        turnoFinalizado = true;
+
+                        vista.mostrarMensaje("\nPasando Turno...");
+                        partida.pasarTurno();
+                        break;
+
+                    case 2: // MEZCLAR MANO
+                        partida.mezclarMano(this.yo);
+                        vista.mostrarMensaje("\nHas mezclado tu mano.");
+                        break;
+
+                    default:
+                        vista.mostrarMensaje("\n¡Opción inválida!");
+                        break;
+                }
             }
+        } catch (RemoteException e) {
+            vista.mostrarMensaje("Error de comunicación con el servidor: " + e.getMessage());
         }
     }
 
-    public void jugando(){
-        partida.iniciar();
-        //actualizar();
-        //ACTUALIZAR
-        while(!partida.juegoTerminado()){ //WHILE QUEDEN JUGADORES JUGANDO (J>1)
-
-            if(partida.getJugadorEnTurno() instanceof JugadorHumano)
-            {
-                vista.mostrarMensaje("\nTU TURNO: ");
-                jugarTurno(partida.getJugadorEnTurno());
-            }
-            else if(partida.getJugadorEnTurno() instanceof JugadorIA)
-            {
-                vista.mostrarMensaje("\nTURNO IA: ");
-                vista.mostrarMensaje("IA TOMA CARTA... ");
-                vista.mostrarMensaje("IA DESCARTA PARES...");
-                /*((JugadorIA) partida.getJugadorEnTurno()).tomarCartaIA(partida.getSiguienteJugador(partida.getJugadorEnTurno()));
-                ((JugadorIA) partida.getJugadorEnTurno()).mezclarYDescartarIA();*/
-                partida.jugarIA(partida.getJugadorEnTurno());
-            }
-
-            if(partida.juegoTerminado()){
-                break;
-            }
-            partida.pasarTurno();
-
-            vista.mostrarMensaje("\nPasando Turno...");
-
-            partida.revisarJugadores();
-            //actualizar();
-        }
-    }
-
-    public void jugarTurno(Jugador jugador){
-        while(true){
-            vista.mostrarOpcionesDeJuego();
-            switch(vista.obtenerOpcion()){
-                case 1: //TOMAR CARTA Y DESCARTAR
-                    turnoTomarCarta(jugador);
-                    turnoDescartarCartas(jugador);
-                    return;
-                case 2:
-                    partida.mezclarMano(jugador);
-                    //actualizar();
-                    break;
-                default:
-                    vista.mostrarMensaje("\nOpcion invalida!");
-                    break;
-            }
-        }
-    }
-
-    public void turnoTomarCarta(Jugador jugador){
+    public void turnoTomarCarta(Jugador jugador) throws RemoteException {
         vista.mostrarMensajeSinSalto("\nElija una carta del contrincante: ");
-        int indice = vista.obtenerOpcion()-1;
+        int indice = vista.obtenerOpcion() - 1;
 
-        while(!partida.opcionValidaParaTomar(jugador, indice)){
-            vista.mostrarMensaje("\nOpcion invalida!");
-            vista.mostrarMensajeSinSalto("\nElija una carta del contrincante: ");
-            indice = vista.obtenerOpcion()-1;
+        while (!partida.opcionValidaParaTomar(jugador, indice)) {
+            vista.mostrarMensaje("\n¡Opción inválida!");
+            vista.mostrarMensajeSinSalto("Elija una carta del contrincante: ");
+            indice = vista.obtenerOpcion() - 1;
         }
 
         vista.mostrarMensaje("\nTomando carta...");
         partida.tomarCarta(jugador, indice);
-
-        //actualizar();
     }
 
-    public void turnoDescartarCartas(Jugador jugador){
-        if(jugador.tienePares()){
+    public void turnoDescartarCartas(Jugador jugador) throws RemoteException {
+        if (jugador.tienePares()) {
             vista.mostrarMensaje("\nElija dos cartas del mismo par: ");
             vista.mostrarMensajeSinSalto("Carta UNO: ");
             int cartaUno = vista.obtenerOpcion() - 1;
             vista.mostrarMensajeSinSalto("Carta DOS: ");
             int cartaDos = vista.obtenerOpcion() - 1;
 
-            while(
-                cartaUno == cartaDos ||
-                !partida.esCartaValida(jugador, cartaUno) ||
-                !partida.esCartaValida(jugador, cartaDos) ||
-                !partida.sonPares(jugador, cartaUno, cartaDos))
+            while (
+                    cartaUno == cartaDos ||
+                            !partida.esCartaValida(jugador, cartaUno) ||
+                            !partida.esCartaValida(jugador, cartaDos) ||
+                            !partida.sonPares(jugador, cartaUno, cartaDos))
             {
-                vista.mostrarMensaje("\nOpcion invalida!");
-                vista.mostrarMensajeSinSalto("\nCarta UNO: ");
+                vista.mostrarMensaje("\n¡Opción inválida!");
+                vista.mostrarMensajeSinSalto("Carta UNO: ");
                 cartaUno = vista.obtenerOpcion() - 1;
                 vista.mostrarMensajeSinSalto("Carta DOS: ");
                 cartaDos = vista.obtenerOpcion() - 1;
             }
+
             vista.mostrarMensaje("\nEliminando pares...");
             partida.descartarPares(jugador, jugador.getCarta(cartaUno), jugador.getCarta(cartaDos));
-        }
-        else{
-            vista.mostrarMensaje("\nNo tienes pares para descartar...");
-            //HABRIA QUE PONER ALGO PARA QUE EL MENSAJE NO SE SALTEE
+        } else {
+            vista.mostrarMensaje("\nNo tienes pares para descartar.");
         }
     }
-
-    public void cantJugadores(){
-        while(true){
-            vista.mostrarMensaje("\nElija cantidad de jugadores (MAX=4, MIN=2)");
-            vista.mostrarMensajeSinSalto("Opcion: ");
-            int opcion = vista.obtenerOpcion();
-            if(opcion<5 && opcion>1){
-                for(int i=0; i<opcion-1; i++){
-                    Jugador j = new JugadorIA("IA");
-                    partida.agregarJugador(j);
-                }
-                //String nombre = vista.obtenerString(); NO FUNCIONA?
-                Jugador j = new JugadorHumano("TU");
-                partida.agregarJugador(j);
-                return;
-            }
-            vista.mostrarMensaje("\nOpcion invalida!");
-        }
-    }
-
 
     @Override
-    public void actualizar() {
-        vista.mostrarJugadores(partida.getJugadores());
+    public <T extends IObservableRemoto> void setModeloRemoto(T t) throws RemoteException {
+        this.partida = (IPartida) t;
+    }
+
+    /**
+     * Canal de eventos de RMI-MVC. Se activa en todos los clientes cuando
+     * el modelo invoca notificarObservadores(evento).
+     */
+    @Override
+    public void actualizar(IObservableRemoto iObservableRemoto, Object evento) throws RemoteException {
+        if (evento instanceof EventoJuego) {
+            EventoJuego e = (EventoJuego) evento;
+
+            switch (e) {
+                case JUGADOR_AGREGADO:
+                    vista.mostrarMensaje("\nUn nuevo jugador se ha unido a la sala.");
+                    vista.mostrarJugadores(partida.getJugadores(), this.yo);
+                    break;
+
+                case INICIO_PARTIDA:
+                    vista.mostrarMensaje("\n==================================");
+                    vista.mostrarMensaje("¡LA PARTIDA HA COMENZADO!");
+                    vista.mostrarMensaje("==================================");
+                    evaluarEstadoTurno();
+                    break;
+
+                case TURNO_CAMBIADO:
+                    evaluarEstadoTurno();
+                    break;
+
+                case FIN_DE_JUEGO:
+                    vista.mostrarMensaje("\n==================================");
+                    vista.mostrarMensaje("¡EL JUEGO HA TERMINADO!");
+                    if (partida.getJugadorEnTurno() != null) {
+                        vista.mostrarPerdedor(partida.getJugadorEnTurno());
+                    }
+                    vista.mostrarMensaje("==================================");
+                    break;
+            }
+        } else {
+            // Actualización por defecto si no se pasa un enum específico
+            vista.mostrarJugadores(partida.getJugadores(), this.yo);
+        }
+    }
+
+    /**
+     * Verifica si el jugador local es quien debe realizar una jugada.
+     */
+    private void evaluarEstadoTurno() throws RemoteException {
+        // Muestra las cartas de 'yo' visibles y las de los contrincantes como [X]
+        vista.mostrarJugadores(partida.getJugadores(), this.yo);
+
+        Jugador jugadorEnTurno = partida.getJugadorEnTurno();
+
+        if (jugadorEnTurno == null) {
+            return;
+        }
+
+        if (this.yo != null && this.yo.getNombre().equalsIgnoreCase(jugadorEnTurno.getNombre())) {
+            vista.mostrarMensaje("\n----------------------------------");
+            vista.mostrarMensaje(">>> ¡ES TU TURNO! <<<");
+            vista.mostrarMensaje("----------------------------------");
+            procesarTurnoLocal();
+        } else {
+            vista.mostrarMensaje("\nTurno actual de: " + jugadorEnTurno.getNombre() + ". Esperando...");
+        }
     }
 }
